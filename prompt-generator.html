@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>مولّد البرومبتات الاحترافي — قاعدة AI</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: hsl(220, 20%, 4%);
+      --bg-secondary: hsl(220, 18%, 8%);
+      --bg-card: hsl(220, 18%, 10%);
+      --bg-muted: hsl(220, 15%, 12%);
+      --text-primary: hsl(210, 20%, 92%);
+      --text-muted: hsl(215, 15%, 55%);
+      --accent: hsl(175, 80%, 50%);
+      --accent-dim: hsl(175, 80%, 35%);
+      --border: hsl(220, 15%, 16%);
+      --border-hover: hsl(220, 15%, 22%);
+      --shadow-glow: 0 0 40px hsl(175 80% 50% / 0.12);
+      --shadow-glow-strong: 0 0 60px hsl(175 80% 50% / 0.2);
+      --danger: hsl(0, 70%, 55%);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'IBM Plex Sans Arabic', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.7;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Grid background */
+    .grid-bg {
+      background-image:
+        linear-gradient(hsl(220 15% 16% / 0.4) 1px, transparent 1px),
+        linear-gradient(90deg, hsl(220 15% 16% / 0.4) 1px, transparent 1px);
+      background-size: 60px 60px;
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0; pointer-events: none;
+    }
+
+    /* Ambient glow */
+    .ambient {
+      position: fixed; top: -30%; left: 50%; transform: translateX(-50%);
+      width: 800px; height: 600px;
+      background: radial-gradient(ellipse, hsl(175 80% 50% / 0.06) 0%, transparent 70%);
+      pointer-events: none; z-index: 0;
+    }
+
+    .container {
+      position: relative; z-index: 1;
+      max-width: 960px; margin: 0 auto;
+      padding: 2.5rem 1.25rem 3rem;
+    }
+
+    /* Header */
+    .header { text-align: center; margin-bottom: 3rem; }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.45rem 1.25rem;
+      background: hsl(175 80% 50% / 0.06);
+      border: 1px solid hsl(175 80% 50% / 0.25);
+      border-radius: 2rem; font-size: 0.8rem;
+      color: var(--accent); margin-bottom: 1.5rem;
+      backdrop-filter: blur(8px);
+    }
+
+    .live-dot {
+      width: 6px; height: 6px;
+      background: var(--accent); border-radius: 50%;
+      animation: pulse-dot 1.8s infinite;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.7); }
+    }
+
+    h1 { font-size: 2.75rem; font-weight: 700; margin-bottom: 0.75rem; letter-spacing: -0.02em; }
+
+    .text-gradient {
+      background: linear-gradient(135deg, hsl(175,80%,55%), hsl(195,90%,60%));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      color: var(--text-muted); font-size: 1.05rem;
+      max-width: 550px; margin: 0 auto;
+    }
+
+    /* Cards */
+    .card {
+      background: linear-gradient(160deg, var(--bg-card) 0%, hsl(220,18%,7%) 100%);
+      border: 1px solid var(--border);
+      border-radius: 1rem; padding: 1.75rem;
+      margin-bottom: 1.25rem;
+      transition: border-color 0.3s;
+    }
+    .card:hover { border-color: var(--border-hover); }
+    .card.glow { border-color: var(--accent); box-shadow: var(--shadow-glow-strong); }
+
+    .section-title {
+      font-size: 1rem; font-weight: 600;
+      color: var(--accent); margin-bottom: 1.25rem;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+
+    /* Labels */
+    label {
+      display: block; font-size: 0.825rem;
+      color: var(--text-muted); margin-bottom: 0.6rem;
+      font-weight: 500;
+    }
+
+    /* Textarea */
+    textarea {
+      width: 100%; min-height: 120px; padding: 1.1rem;
+      background: var(--bg-muted); border: 1px solid var(--border);
+      border-radius: 0.75rem; color: var(--text-primary);
+      font-family: 'IBM Plex Sans Arabic', sans-serif;
+      font-size: 0.9rem; resize: vertical;
+      transition: all 0.3s ease; line-height: 1.8;
+    }
+    textarea:focus {
+      outline: none; border-color: var(--accent);
+      box-shadow: 0 0 0 3px hsl(175 80% 50% / 0.08);
+    }
+    textarea::placeholder { color: hsl(215, 15%, 35%); }
+
+    /* Tags */
+    .tags-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem; }
+
+    .tag {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      padding: 0.5rem 1rem;
+      background: var(--bg-muted);
+      border: 1.5px solid var(--border);
+      border-radius: 2rem; font-size: 0.825rem;
+      cursor: pointer; transition: all 0.25s ease;
+      user-select: none; color: var(--text-primary);
+    }
+    .tag:hover { border-color: hsl(175 80% 50% / 0.5); background: hsl(175 80% 50% / 0.05); }
+    .tag.active {
+      background: hsl(175 80% 50% / 0.12);
+      color: var(--accent);
+      border-color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* Templates grid */
+    .templates-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 0.75rem; margin-bottom: 1rem;
+    }
+
+    .template-card {
+      background: var(--bg-muted);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem; padding: 1rem;
+      cursor: pointer; transition: all 0.25s ease;
+    }
+    .template-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-glow);
+    }
+    .template-icon { font-size: 1.5rem; margin-bottom: 0.35rem; }
+    .template-title { font-size: 0.825rem; font-weight: 600; margin-bottom: 0.15rem; }
+    .template-desc { font-size: 0.7rem; color: var(--text-muted); }
+
+    /* Buttons */
+    .btn {
+      padding: 0.9rem 2rem; font-weight: 700; font-size: 0.95rem;
+      border-radius: 0.75rem; border: none; cursor: pointer;
+      transition: all 0.25s ease;
+      font-family: 'IBM Plex Sans Arabic', sans-serif;
+    }
+    .btn-primary {
+      width: 100%;
+      background: linear-gradient(135deg, var(--accent), hsl(185, 75%, 45%));
+      color: var(--bg-primary);
+      box-shadow: var(--shadow-glow);
+    }
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-glow-strong);
+    }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .btn-secondary {
+      background: var(--bg-muted); color: var(--text-primary);
+      border: 1px solid var(--border); padding: 0.7rem 1.5rem; font-size: 0.85rem;
+    }
+    .btn-secondary:hover { border-color: var(--accent); background: hsl(175 80% 50% / 0.05); }
+
+    .btn-sm { padding: 0.55rem 1.25rem; font-size: 0.8rem; font-weight: 600; width: auto; }
+
+    .btn-stop {
+      background: var(--danger); color: white; border: none;
+      padding: 0.35rem 0.85rem; font-size: 0.72rem;
+      border-radius: 0.5rem; cursor: pointer;
+      font-family: inherit; font-weight: 600;
+    }
+
+    /* Result section */
+    .result-section { display: none; }
+    .result-section.show { display: block; animation: slideUp 0.4s ease; }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Stats */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.75rem; margin-bottom: 1.25rem;
+    }
+    .stat {
+      background: var(--bg-muted); border: 1px solid var(--border);
+      border-radius: 0.75rem; padding: 0.85rem; text-align: center;
+    }
+    .stat-val { font-size: 1.35rem; font-weight: 700; color: var(--accent); }
+    .stat-lbl { font-size: 0.7rem; color: var(--text-muted); margin-top: 0.15rem; }
+
+    /* Stream bar */
+    .stream-bar {
+      display: none; align-items: center; gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      background: hsl(175 80% 50% / 0.04);
+      border: 1px solid hsl(175 80% 50% / 0.15);
+      border-radius: 0.75rem; margin-bottom: 1rem;
+    }
+    .stream-bar.show { display: flex; }
+    .bar-wrap { flex: 1; height: 3px; background: var(--bg-primary); border-radius: 2px; overflow: hidden; }
+    .bar-fill { height: 100%; background: var(--accent); border-radius: 2px; width: 0%; transition: width 0.15s; }
+    .bar-text { font-size: 0.72rem; color: var(--accent); white-space: nowrap; }
+    .bar-chars { font-size: 0.72rem; color: var(--text-muted); white-space: nowrap; }
+
+    /* Result box */
+    .result-header {
+      display: flex; justify-content: space-between;
+      align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;
+    }
+    .result-title { font-size: 1.1rem; font-weight: 600; color: var(--accent); }
+
+    .result-box {
+      background: var(--bg-primary); border: 1px solid var(--border);
+      border-radius: 0.75rem; padding: 1.25rem;
+      font-size: 0.88rem; line-height: 2;
+      white-space: pre-wrap; margin-bottom: 1rem;
+      max-height: 450px; overflow-y: auto; min-height: 60px;
+      transition: border-color 0.3s;
+    }
+    .result-box.streaming { border-color: var(--accent); box-shadow: var(--shadow-glow); }
+    .result-box::-webkit-scrollbar { width: 6px; }
+    .result-box::-webkit-scrollbar-thumb { background: var(--accent-dim); border-radius: 3px; }
+
+    .cursor-blink {
+      display: inline-block; width: 2px; height: 1.1em;
+      background: var(--accent); margin-right: 2px;
+      animation: blink 0.6s infinite; vertical-align: text-bottom;
+    }
+    @keyframes blink { 0%,100%{opacity:1;}50%{opacity:0;} }
+
+    /* Actions */
+    .actions-row { display: flex; gap: 0.75rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+
+    /* Error */
+    .error-box {
+      display: none; padding: 0.85rem 1rem;
+      background: hsl(0 70% 50% / 0.08);
+      border: 1px solid hsl(0 70% 50% / 0.25);
+      border-radius: 0.75rem; color: hsl(0,70%,70%);
+      font-size: 0.85rem; margin-bottom: 1rem;
+    }
+    .error-box.show { display: block; }
+
+    /* Tips */
+    .tips-box {
+      padding: 1.1rem;
+      background: var(--bg-muted);
+      border-radius: 0.75rem;
+      border-right: 3px solid var(--accent);
+    }
+    .tips-title { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.6rem; color: var(--accent); }
+    .tips-list { list-style: none; font-size: 0.78rem; color: var(--text-muted); }
+    .tips-list li { margin-bottom: 0.4rem; padding-right: 1rem; position: relative; }
+    .tips-list li::before { content: '←'; position: absolute; right: 0; color: var(--accent); }
+
+    /* Footer */
+    .footer {
+      text-align: center; margin-top: 2.5rem;
+      padding-top: 1.5rem; border-top: 1px solid var(--border);
+      font-size: 0.8rem; color: var(--text-muted);
+    }
+
+    @media (max-width: 640px) {
+      h1 { font-size: 2rem; }
+      .card { padding: 1.25rem; }
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      .templates-grid { grid-template-columns: 1fr 1fr; }
+      .container { padding: 1.5rem 1rem 2rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+<div class="ambient"></div>
+
+<div class="container">
+  <!-- Header -->
+  <div class="header">
+    <div class="badge">
+      <span class="live-dot"></span>
+      Claude AI — Abdullah_Ops1
+    </div>
+    <h1>مولّد <span class="text-gradient">البرومبتات الاحترافي</span></h1>
+    <p class="subtitle">ذكاء اصطناعي حقيقي يكتب برومبتك أمامك حرفاً بحرف</p>
+  </div>
+
+  <!-- Templates -->
+  <div class="card">
+    <h3 class="section-title">⚡ Templates جاهزة</h3>
+    <div class="templates-grid" id="templatesGrid"></div>
+  </div>
+
+  <!-- Config -->
+  <div class="card">
+    <h3 class="section-title">⚙️ تخصيص البرومبت</h3>
+
+    <label>🤖 المنصة:</label>
+    <div class="tags-row" id="platformTags"></div>
+
+    <label>📋 نوع المخرجات:</label>
+    <div class="tags-row" id="outputTags"></div>
+
+    <label>🎭 النبرة:</label>
+    <div class="tags-row" id="toneTags"></div>
+
+    <label>🌐 اللغة:</label>
+    <div class="tags-row" id="langTags"></div>
+
+    <label>📏 مستوى التفاصيل:</label>
+    <div class="tags-row" id="detailTags"></div>
+
+    <div style="margin-top:1.25rem;">
+      <label>💭 وصف البرومبت المطلوب:</label>
+      <textarea id="userInput" placeholder="مثال: اكتب لي مقال عن أثر الذكاء الاصطناعي على التعليم في السعودية..."></textarea>
+      <p style="font-size:0.72rem;color:var(--text-muted);margin-top:0.4rem;">💡 Ctrl+Enter للتوليد السريع</p>
+    </div>
+
+    <button id="generateBtn" class="btn btn-primary" style="margin-top:1.25rem;">✨ توليد البرومبت بالذكاء الاصطناعي</button>
+  </div>
+
+  <!-- Result -->
+  <div id="resultSection" class="result-section">
+    <div class="card glow">
+      <div class="stats-row">
+        <div class="stat"><div class="stat-val" id="statWords">0</div><div class="stat-lbl">كلمة</div></div>
+        <div class="stat"><div class="stat-val" id="statChars">0</div><div class="stat-lbl">حرف</div></div>
+        <div class="stat"><div class="stat-val" id="statPlatform">-</div><div class="stat-lbl">المنصة</div></div>
+        <div class="stat"><div class="stat-val" id="statTime">-</div><div class="stat-lbl">ثانية</div></div>
+      </div>
+
+      <div class="result-header">
+        <h3 class="result-title">✨ البرومبت الجاهز</h3>
+        <button class="btn btn-secondary btn-sm" id="copyBtn">📋 نسخ</button>
+      </div>
+
+      <div id="errorBox" class="error-box"></div>
+
+      <div id="streamBar" class="stream-bar">
+        <span class="live-dot"></span>
+        <div class="bar-wrap"><div id="barFill" class="bar-fill"></div></div>
+        <span class="bar-text">Claude يكتب...</span>
+        <span id="barChars" class="bar-chars">0 حرف</span>
+        <button class="btn-stop" id="stopBtn">⏹ إيقاف</button>
+      </div>
+
+      <div id="resultBox" class="result-box"></div>
+
+      <div class="actions-row">
+        <button class="btn btn-secondary" id="regenBtn">🔄 إعادة التوليد</button>
+        <button class="btn btn-secondary" id="clearBtn">🗑️ ابدأ من جديد</button>
+      </div>
+
+      <div class="tips-box">
+        <h4 class="tips-title">💡 نصائح للاستخدام</h4>
+        <ul class="tips-list" id="tipsList"></ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>صُنع بـ ❤️ في <span style="color:var(--accent);font-weight:600;">قاعدة AI</span></p>
+    <p style="margin-top:0.35rem;font-size:0.7rem;">مدعوم بـ Claude | 2026</p>
+  </div>
+</div>
+
+<script>
+// ── Config State ──
+const config = {
+  platform: 'claude',
+  outputType: 'text',
+  tone: 'professional',
+  language: 'arabic',
+  detail: 'moderate'
+};
+
+let controller = null;
+let startTime = null;
+
+// ── Data ──
+const platformOptions = [
+  { key: 'claude', label: 'Claude' },
+  { key: 'chatgpt', label: 'ChatGPT' },
+  { key: 'gemini', label: 'Gemini' },
+  { key: 'perplexity', label: 'Perplexity' },
+  { key: 'midjourney', label: 'Midjourney' },
+  { key: 'dalle', label: 'DALL-E' },
+  { key: 'stable-diffusion', label: 'Stable Diffusion' }
+];
+
+const outputOptions = [
+  { key: 'text', label: '📝 نص' },
+  { key: 'code', label: '💻 كود' },
+  { key: 'image', label: '🎨 صورة' },
+  { key: 'data', label: '📊 بيانات' },
+  { key: 'creative', label: '✨ إبداعي' },
+  { key: 'casestudy', label: '🔍 دراسة حالة' },
+  { key: 'feasibility', label: '💼 دراسة جدوى' },
+  { key: 'business', label: '🚀 فكرة مشروع' }
+];
+
+const toneOptions = [
+  { key: 'professional', label: '👔 احترافي' },
+  { key: 'creative', label: '✨ إبداعي' },
+  { key: 'educational', label: '🎓 تعليمي' },
+  { key: 'friendly', label: '😊 ودّي' },
+  { key: 'formal', label: '📜 رسمي' },
+  { key: 'motivational', label: '🔥 حماسي' },
+  { key: 'technical', label: '🔧 تقني' },
+  { key: 'storytelling', label: '📖 قصصي' }
+];
+
+const langOptions = [
+  { key: 'arabic', label: '🇸🇦 عربي' },
+  { key: 'english', label: '🇺🇸 إنجليزي' },
+  { key: 'both', label: '🌍 ثنائي' }
+];
+
+const detailOptions = [
+  { key: 'brief', label: '⚡ مختصر' },
+  { key: 'moderate', label: '📝 متوسط' },
+  { key: 'detailed', label: '📚 مفصّل جداً' }
+];
+
+const templateData = [
+  { id: 'writing-article', icon: '✍️', title: 'مقال احترافي', desc: 'مقال SEO-friendly كامل', input: 'اكتب مقال احترافي عن [موضوعك] بطول 1000-1500 كلمة، مع مقدمة جذابة، 5 نقاط رئيسية، وخاتمة قوية', platform: 'claude', outputType: 'text', tone: 'professional' },
+  { id: 'code-python', icon: '💻', title: 'كود Python', desc: 'سكريبت موثق ونظيف', input: 'اكتب كود Python كامل ل [وصف المهمة]، مع تعليقات توضيحية، معالجة للأخطاء، وأمثلة استخدام', platform: 'claude', outputType: 'code', tone: 'technical' },
+  { id: 'image-realistic', icon: '🎨', title: 'صورة واقعية', desc: 'Prompt لـ Midjourney/DALL-E', input: 'صورة واقعية hyperrealistic ل [وصف الصورة]، إضاءة سينمائية، تفاصيل عالية، 8K resolution', platform: 'midjourney', outputType: 'image', tone: 'creative' },
+  { id: 'data-analysis', icon: '📊', title: 'تحليل بيانات', desc: 'رؤى وتوصيات قابلة للتنفيذ', input: 'حلل هذه البيانات [وصف البيانات] واستخرج رؤى قابلة للتنفيذ مع توصيات واضحة', platform: 'claude', outputType: 'data', tone: 'professional' },
+  { id: 'email-business', icon: '📧', title: 'إيميل رسمي', desc: 'رسالة احترافية جاهزة', input: 'اكتب إيميل رسمي ل [المستلم] بخصوص [الموضوع]، بأسلوب احترافي ومباشر', platform: 'chatgpt', outputType: 'text', tone: 'formal' },
+  { id: 'social-post', icon: '📱', title: 'بوست تواصل', desc: 'محتوى جذاب لـ X/LinkedIn', input: 'اكتب بوست جذاب لـ [منصة] عن [الموضوع]، مع hook قوي وcall-to-action', platform: 'claude', outputType: 'text', tone: 'creative' }
+];
+
+const tipsData = {
+  claude: ['استخدم XML tags للمهام المعقدة', 'اطلب التفكير خطوة بخطوة', 'Claude يفهم السياق الطويل', 'Few-shot examples تحسّن النتائج'],
+  chatgpt: ['ابدأ بـ system message', 'استخدم step by step', 'حدد طول الإجابة', 'Temperature منخفضة للدقة'],
+  gemini: ['استفد من البحث المدمج', 'Multimodal prompts', 'حدد نسخة الموديل', 'جرب reasoning modes'],
+  perplexity: ['اطلب مصادر محدثة', 'حدد نوع البحث', 'Follow-up للتعمق', 'استفد من المراجع'],
+  midjourney: ['--v 6 للأحدث', '--ar 16:9 للنسبة', 'cinematic, photorealistic', '--stylize للإبداع'],
+  dalle: ['صف التكوين بدقة', 'حدد الأسلوب الفني', 'أوصاف بصرية تفصيلية', 'جرب variations'],
+  'stable-diffusion': ['Negative prompts مهمة', 'حدد sampler و steps', 'LoRA للأساليب', 'CFG 7-12']
+};
+
+const platformNames = {
+  claude: 'Claude', chatgpt: 'ChatGPT', gemini: 'Gemini',
+  perplexity: 'Perplexity', midjourney: 'Midjourney',
+  dalle: 'DALL-E', 'stable-diffusion': 'Stable Diffusion'
+};
+
+// ── Render Tags ──
+function renderTags(containerId, options, configKey) {
+  const container = document.getElementById(containerId);
+  options.forEach(opt => {
+    const span = document.createElement('span');
+    span.className = 'tag' + (config[configKey] === opt.key ? ' active' : '');
+    span.textContent = opt.label;
+    span.addEventListener('click', () => {
+      config[configKey] = opt.key;
+      container.querySelectorAll('.tag').forEach(t => t.classList.remove('active'));
+      span.classList.add('active');
+    });
+    container.appendChild(span);
+  });
+}
+
+function renderTemplates() {
+  const grid = document.getElementById('templatesGrid');
+  templateData.forEach(t => {
+    const div = document.createElement('div');
+    div.className = 'template-card';
+    div.innerHTML = `<div class="template-icon">${t.icon}</div><div class="template-title">${t.title}</div><div class="template-desc">${t.desc}</div>`;
+    div.addEventListener('click', () => applyTemplate(t));
+    grid.appendChild(div);
+  });
+}
+
+function applyTemplate(t) {
+  document.getElementById('userInput').value = t.input;
+
+  // Update config
+  config.platform = t.platform;
+  config.outputType = t.outputType;
+  config.tone = t.tone;
+
+  // Refresh active states
+  refreshTagActive('platformTags', platformOptions, 'platform');
+  refreshTagActive('outputTags', outputOptions, 'outputType');
+  refreshTagActive('toneTags', toneOptions, 'tone');
+
+  document.getElementById('userInput').focus();
+}
+
+function refreshTagActive(containerId, options, configKey) {
+  const tags = document.getElementById(containerId).querySelectorAll('.tag');
+  tags.forEach((tag, i) => {
+    tag.classList.toggle('active', options[i].key === config[configKey]);
+  });
+}
+
+// ── System Prompt Builder ──
+function buildSystem() {
+  const { platform, tone, language, detail, outputType } = config;
+
+  const langMap = {
+    arabic: 'The prompt must be written in Arabic',
+    english: 'Respond in English only',
+    both: 'Bilingual: Arabic and English'
+  };
+  const detailMap = { brief: '150-250 words', moderate: '300-500 words', detailed: '600-900 words' };
+  const toneMap = {
+    professional: 'professional', creative: 'creative',
+    educational: 'educational', friendly: 'friendly',
+    formal: 'strictly formal', motivational: 'motivational',
+    technical: 'technical and precise', storytelling: 'narrative'
+  };
+
+  const typeGuide = {
+    casestudy: 'Structure the prompt for a detailed case study: background, problem, analysis, solution, results, lessons learned.',
+    feasibility: 'Structure the prompt for a feasibility study: executive summary, market analysis, financial projections, risks, recommendations.',
+    business: 'Structure the prompt for a business idea: concept, target market, value proposition, revenue model, first action steps.'
+  };
+
+  let sys = `You are an expert prompt engineer for ${platformNames[platform] || platform}. Create professional optimized prompts.
+Tone: ${toneMap[tone] || 'professional'}
+Language: ${langMap[language]}
+Length: ${detailMap[detail]}
+Return ONLY the prompt text. No preamble, no markdown formatting.`;
+
+  const extra = typeGuide[outputType];
+  if (extra) sys += '\n' + extra;
+
+  return sys;
+}
+
+// ── Generate ──
+async function generatePrompt() {
+  const input = document.getElementById('userInput').value.trim();
+  if (!input) { alert('⚠️ اكتب وصفاً أولاً'); return; }
+
+  const btn = document.getElementById('generateBtn');
+  btn.disabled = true;
+  btn.textContent = '⚡ Claude يكتب...';
+
+  const resultSection = document.getElementById('resultSection');
+  resultSection.classList.add('show');
+
+  const resultBox = document.getElementById('resultBox');
+  resultBox.textContent = '';
+  resultBox.classList.add('streaming');
+
+  const errorBox = document.getElementById('errorBox');
+  errorBox.className = 'error-box';
+
+  showBar(true);
+  startTime = Date.now();
+  controller = new AbortController();
+
+  let fullText = '';
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1500,
+        stream: true,
+        system: buildSystem(),
+        messages: [{ role: 'user', content: `Generate a professional prompt for this request: ${input}` }]
+      }),
+      signal: controller.signal
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error?.message || `خطأ ${res.status}`);
+    }
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const chunk = decoder.decode(value, { stream: true });
+      for (const line of chunk.split('\n')) {
+        if (!line.startsWith('data: ')) continue;
+        const data = line.slice(6).trim();
+        if (data === '[DONE]') break;
+        try {
+          const p = JSON.parse(data);
+          if (p.type === 'content_block_delta' && p.delta?.text) {
+            fullText += p.delta.text;
+            renderStream(fullText);
+            updateBar(fullText.length);
+          }
+        } catch (e) { /* skip non-JSON lines */ }
+      }
+    }
+  } catch (err) {
+    if (err.name !== 'AbortError') {
+      errorBox.textContent = '❌ ' + err.message;
+      errorBox.className = 'error-box show';
+    }
+  }
+
+  // Finalize
+  resultBox.textContent = fullText;
+  resultBox.classList.remove('streaming');
+  showBar(false);
+
+  const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+  document.getElementById('statWords').textContent = fullText.split(/\s+/).filter(Boolean).length;
+  document.getElementById('statChars').textContent = fullText.length;
+  document.getElementById('statPlatform').textContent = platformNames[config.platform] || config.platform;
+  document.getElementById('statTime').textContent = elapsed;
+
+  const currentTips = tipsData[config.platform] || tipsData.claude;
+  document.getElementById('tipsList').innerHTML = currentTips.map(t => `<li>${t}</li>`).join('');
+
+  btn.disabled = false;
+  btn.textContent = '✨ توليد البرومبت بالذكاء الاصطناعي';
+  controller = null;
+
+  setTimeout(() => resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 150);
+}
+
+// ── Helpers ──
+function renderStream(text) {
+  const box = document.getElementById('resultBox');
+  box.innerHTML = '';
+  box.appendChild(document.createTextNode(text));
+  const c = document.createElement('span');
+  c.className = 'cursor-blink';
+  box.appendChild(c);
+  box.scrollTop = box.scrollHeight;
+}
+
+function showBar(show) {
+  document.getElementById('streamBar').className = 'stream-bar' + (show ? ' show' : '');
+  if (!show) document.getElementById('barFill').style.width = '0%';
+}
+
+function updateBar(count) {
+  document.getElementById('barChars').textContent = count + ' حرف';
+  document.getElementById('barFill').style.width = Math.min((count / 1200) * 100, 95) + '%';
+}
+
+function copyPrompt() {
+  const text = document.getElementById('resultBox').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copyBtn');
+    const orig = btn.textContent;
+    btn.textContent = '✅ تم النسخ!';
+    setTimeout(() => btn.textContent = orig, 2000);
+  });
+}
+
+function clearAll() {
+  document.getElementById('userInput').value = '';
+  document.getElementById('resultSection').classList.remove('show');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── Init ──
+renderTags('platformTags', platformOptions, 'platform');
+renderTags('outputTags', outputOptions, 'outputType');
+renderTags('toneTags', toneOptions, 'tone');
+renderTags('langTags', langOptions, 'language');
+renderTags('detailTags', detailOptions, 'detail');
+renderTemplates();
+
+document.getElementById('generateBtn').addEventListener('click', generatePrompt);
+document.getElementById('regenBtn').addEventListener('click', generatePrompt);
+document.getElementById('clearBtn').addEventListener('click', clearAll);
+document.getElementById('copyBtn').addEventListener('click', copyPrompt);
+document.getElementById('stopBtn').addEventListener('click', () => { if (controller) controller.abort(); });
+document.getElementById('userInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.ctrlKey) generatePrompt();
+});
+</script>
+
+</body>
+</html>
